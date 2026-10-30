@@ -24,22 +24,31 @@ de IA.
 **Extras**
 
 - **Crear pedido con IA:** escribes *"pedido PED-1042 para Ferretería López,
-  doscientas cincuenta unidades"* y Claude llena el formulario (salida
+  doscientas cincuenta unidades"* y la IA llena el formulario (salida
   estructurada). La IA solo propone: el usuario revisa y confirma. Avisa si el
   número ya existe o si falta algún dato.
 - **Resumen con IA:** informe breve del avance de un pedido o de todos, con
   cuellos de botella, rechazos y la siguiente acción sugerida.
-- Si el servidor no tiene clave de IA, esas funciones se ocultan y el resto
-  funciona igual.
+- **IA con respaldo (RF-13):** primero Gemini (`gemini-3.5-flash-lite`, luego
+  `gemini-3.1-flash-lite`) y, si falla (saturado, sin saldo, caído o lento),
+  la misma solicitud pasa sola a Claude (`claude-haiku-5-5`). El encabezado
+  muestra qué IA está activa y el resumen dice qué modelo lo generó.
+- Si el servidor no tiene ninguna clave de IA, esas funciones se ocultan y el
+  resto funciona igual.
 - **Historial** de movimientos por paquete (quién pasó de qué estado a cuál,
   y motivo de rechazo).
-- Tablero por estados, indicadores globales, búsqueda, enlace directo a un
-  pedido (`/#PED-1001`), modo oscuro y diseño adaptable a celular.
+- **Interfaz tipo casillero de clasificación:** cada estado es una casilla y
+  cada paquete una ficha que se desliza a la siguiente al avanzar; lo que
+  cambia queda marcado hasta que lo ves. Tema claro y oscuro con la misma
+  paleta (sigue al sistema y se cambia con un botón que se recuerda),
+  responsive desde 320 px (en el celular las casillas son pestañas), contraste
+  WCAG AA y navegación con teclado. Indicadores globales, búsqueda y enlace
+  directo a un pedido (`/#PED-1001`). Sistema visual en `DESIGN.md`.
 
 ## Tecnología
 
 Python 3.13 · FastAPI · SQLAlchemy 2 · PostgreSQL 16 · Pydantic 2 · SDK
-`anthropic` (Claude Haiku 5.5) · HTML/CSS/JS sin framework · pytest · Docker ·
+Gemini (REST con `httpx`) y `anthropic` (Claude Haiku 5.5) con respaldo · HTML/CSS/JS sin framework · pytest · Docker ·
 GitHub Actions · Cloudflare Tunnel.
 
 ```
@@ -72,8 +81,9 @@ Sin configuración usa SQLite (`pedidos.db`). Para PostgreSQL o IA, copia
 
 ```env
 DATABASE_URL=postgresql+psycopg://usuario:clave@localhost:5432/pedidos
-ANTHROPIC_API_KEY=sk-ant-...   # opcional
-AI_MODEL=claude-haiku-5-5
+GEMINI_API_KEY=...             # opcional (Google AI Studio, nivel gratis)
+ANTHROPIC_API_KEY=sk-ant-...   # opcional (respaldo)
+AI_ORDER=gemini,anthropic      # orden de prueba; si uno falla, sigue el otro
 ```
 
 Las tablas se crean solas al iniciar.
@@ -101,7 +111,7 @@ TEST_DATABASE_URL=postgresql+psycopg://postgres:test@localhost:5432/pedidos_test
   uv run pytest                    # PostgreSQL (incluye la prueba de concurrencia)
 ```
 
-79 pruebas automatizadas, nombradas por requisito (`test_rf03_…`):
+90 pruebas automatizadas, nombradas por requisito (`test_rf03_…`):
 
 - **Dominio:** división (250, 100, 1, 99, 101, 1000), transiciones válidas e
   inválidas, rechazo, cálculo de avance y redondeo.
@@ -113,6 +123,9 @@ TEST_DATABASE_URL=postgresql+psycopg://postgres:test@localhost:5432/pedidos_test
   fila.
 - **IA:** con un cliente simulado (sin red ni costo): borrador, campos
   faltantes, número repetido, errores del servicio → 503, sin clave → 503.
+- **Respaldo de IA (RF-13):** Gemini falla → responde Claude; ambos fallan →
+  503; orden configurable; solicitud a Gemini y sus errores (429, 503,
+  respuesta vacía o JSON inválido, tiempo agotado) con `httpx.MockTransport`.
 
 El flujo de GitHub Actions (`.github/workflows/tests.yml`, corre todo en
 SQLite y PostgreSQL) está listo, pero ver "Pendientes".
@@ -164,6 +177,10 @@ las funciones de IA responden 503 y la interfaz las oculta).
 ## Pendientes y posibles mejoras
 
 Todos los requisitos de la prueba están implementados, probados y publicados.
+
+- **Saldo de Claude:** la clave de Claude está configurada, pero la cuenta de
+  la API no tiene crédito (la suscripción Claude Pro no lo incluye). Mientras
+  tanto responde Gemini; Claude entra solo cuando se cargue saldo.
 
 - **CI en GitHub Actions:** el archivo está escrito y probado localmente, pero
   no se pudo subir: el token de GitHub usado por el agente no tenía el permiso

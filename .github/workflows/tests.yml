@@ -1,7 +1,9 @@
 name: Pruebas
 
 on:
+  # En main con cada push; en las demás ramas, a través de su PR (sin correr doble).
   push:
+    branches: [main]
   pull_request:
 
 jobs:

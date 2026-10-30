@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .ai import AsistenteIA, IANoDisponible
+from .ai import AsistenteIA, IANoDisponible, desde_config
 from .config import Settings, get_settings
 from .db import Database
 from .routes import router
@@ -57,7 +57,7 @@ def create_app(settings: Settings | None = None, ia: AsistenteIA | None = None) 
 
     app = FastAPI(title="Seguimiento de Pedidos", version="1.0.0", lifespan=lifespan)
     app.state.db = Database(settings.database_url)
-    app.state.ia = ia or AsistenteIA(settings.anthropic_api_key, settings.ai_model)
+    app.state.ia = ia or desde_config(settings)
 
     @app.exception_handler(RequestValidationError)
     async def _validacion(_: Request, exc: RequestValidationError):

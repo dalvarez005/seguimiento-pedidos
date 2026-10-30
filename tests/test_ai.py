@@ -1,12 +1,21 @@
-"""Funciones de IA con un cliente Anthropic simulado (sin red). RF-10..RF-12."""
+"""Funciones de IA con clientes simulados (sin red). RF-10..RF-13."""
 
+import json
 from types import SimpleNamespace
 
 import anthropic
 import httpx
 import pytest
 
-from pedidos.ai import AsistenteIA, _Extraccion
+from pedidos.ai import (
+    AsistenteIA,
+    IANoDisponible,
+    ProveedorAnthropic,
+    ProveedorGemini,
+    _Extraccion,
+    desde_config,
+)
+from pedidos.config import Settings
 
 
 class MensajesFalsos:
@@ -34,7 +43,8 @@ class MensajesFalsos:
 
 def asistente(**kw):
     mensajes = MensajesFalsos(**kw)
-    ia = AsistenteIA(api_key="", modelo="modelo-prueba", cliente=SimpleNamespace(messages=mensajes))
+    proveedor = ProveedorAnthropic("", "modelo-prueba", cliente=SimpleNamespace(messages=mensajes))
+    ia = AsistenteIA([proveedor])
     return ia, mensajes
 
 
@@ -44,7 +54,8 @@ def extraccion(numero="PED-55", cliente="Acme", cantidad=250, nota=None):
 
 # RF-12
 def test_rf12_sin_clave_la_ia_no_esta_disponible(client):
-    assert client.get("/api/ia/estado").json() == {"disponible": False, "modelo": None}
+    estado = client.get("/api/ia/estado").json()
+    assert estado == {"disponible": False, "modelo": None, "proveedores": []}
     r = client.post("/api/ia/interpretar", json={"texto": "pedido 1 de Acme, 5 unidades"})
     assert r.status_code == 503
     assert client.post("/api/ia/resumen", json={}).status_code == 503
@@ -53,7 +64,8 @@ def test_rf12_sin_clave_la_ia_no_esta_disponible(client):
 def test_rf12_con_cliente_esta_disponible(crear_cliente):
     ia, _ = asistente()
     c = crear_cliente(ia)
-    assert c.get("/api/ia/estado").json() == {"disponible": True, "modelo": "modelo-prueba"}
+    estado = c.get("/api/ia/estado").json()
+    assert estado == {"disponible": True, "modelo": "modelo-prueba", "proveedores": ["anthropic"]}
 
 
 # RF-10
@@ -103,7 +115,7 @@ def test_rf11_resumen_envia_datos_del_pedido(crear_cliente):
     for _ in range(3):
         c.post(f"/api/paquetes/{p['paquetes'][2]['id']}/avanzar")
     r = c.post("/api/ia/resumen", json={"numero": "P-1"})
-    assert r.json() == {"texto": "Va al 20 %."}
+    assert r.json() == {"texto": "Va al 20 %.", "modelo": "modelo-prueba"}
     contenido = msgs.llamadas[0][1]["messages"][0]["content"]
     assert '"avance_pct":20.0' in contenido
     assert '"Listo":1' in contenido
@@ -147,3 +159,127 @@ def test_rechazo_del_modelo_responde_503(crear_cliente):
     ia, _ = asistente(extraccion=extraccion(), stop="refusal")
     c = crear_cliente(ia)
     assert c.post("/api/ia/interpretar", json={"texto": "pedido 1 de Acme 5"}).status_code == 503
+
+
+# RF-13: respaldo entre proveedores
+class ProveedorFalso:
+    def __init__(self, nombre, modelo, falla=False, borrador=None, texto="Informe"):
+        self.nombre, self.modelo, self.falla = nombre, modelo, falla
+        self.borrador = borrador or extraccion().model_dump()
+        self.texto = texto
+        self.llamadas = 0
+
+    def _quizas_fallar(self):
+        self.llamadas += 1
+        if self.falla:
+            raise IANoDisponible(f"{self.nombre} caído")
+
+    def interpretar(self, texto):
+        self._quizas_fallar()
+        return self.borrador
+
+    def resumir(self, contenido):
+        self._quizas_fallar()
+        return self.texto
+
+
+def test_rf13_si_gemini_falla_responde_claude(crear_cliente):
+    gemini = ProveedorFalso("gemini", "g-1", falla=True)
+    claude = ProveedorFalso("anthropic", "c-1", borrador=extraccion(cliente="De Claude").model_dump())
+    c = crear_cliente(AsistenteIA([gemini, claude]))
+    r = c.post("/api/ia/interpretar", json={"texto": "pedido PED-55 de Acme, 250"})
+    assert r.status_code == 200
+    assert r.json()["cliente"] == "De Claude"
+    assert gemini.llamadas == 1 and claude.llamadas == 1
+
+
+def test_rf13_resumen_indica_el_modelo_que_respondio(crear_cliente):
+    ia = AsistenteIA([ProveedorFalso("gemini", "g-1", falla=True),
+                      ProveedorFalso("anthropic", "c-1", texto="Todo bien.")])
+    c = crear_cliente(ia)
+    c.post("/api/pedidos", json={"numero": "P-1", "cliente": "Acme", "cantidad": 10})
+    assert c.post("/api/ia/resumen", json={}).json() == {"texto": "Todo bien.", "modelo": "c-1"}
+
+
+def test_rf13_si_todos_fallan_responde_503(crear_cliente):
+    ia = AsistenteIA([ProveedorFalso("gemini", "g-1", falla=True),
+                      ProveedorFalso("anthropic", "c-1", falla=True)])
+    c = crear_cliente(ia)
+    r = c.post("/api/ia/interpretar", json={"texto": "pedido 1 de Acme 5"})
+    assert r.status_code == 503
+    assert "Ningún servicio de IA" in r.json()["detail"]
+
+
+def test_rf13_respeta_el_orden_y_no_llama_al_respaldo_si_no_hace_falta(crear_cliente):
+    gemini = ProveedorFalso("gemini", "g-1")
+    claude = ProveedorFalso("anthropic", "c-1")
+    c = crear_cliente(AsistenteIA([gemini, claude]))
+    assert c.post("/api/ia/interpretar", json={"texto": "pedido 1 de Acme 5"}).status_code == 200
+    assert (gemini.llamadas, claude.llamadas) == (1, 0)
+    estado = c.get("/api/ia/estado").json()
+    assert estado["proveedores"] == ["gemini", "anthropic"]
+    assert estado["modelo"] == "g-1"
+
+
+def test_rf13_config_arma_proveedores_segun_orden_y_claves():
+    s = Settings(gemini_api_key="g", anthropic_api_key="a",
+                 gemini_model="g-1, g-2", ai_model="c-1", ai_order="anthropic,gemini")
+    assert [(p.nombre, p.modelo) for p in desde_config(s).proveedores] == [
+        ("anthropic", "c-1"), ("gemini", "g-1"), ("gemini", "g-2"),
+    ]
+    solo_gemini = desde_config(Settings(gemini_api_key="g", anthropic_api_key="", gemini_model="g-1"))
+    assert [p.nombre for p in solo_gemini.proveedores] == ["gemini"]
+    assert not desde_config(Settings(gemini_api_key="", anthropic_api_key="")).disponible
+
+
+def _gemini(manejador):
+    http = httpx.Client(transport=httpx.MockTransport(manejador))
+    return ProveedorGemini("clave-g", "gemini-prueba", http=http)
+
+
+def _respuesta_gemini(texto):
+    return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": texto}]}}]})
+
+
+def test_rf13_gemini_envia_solicitud_correcta_y_parsea_el_borrador():
+    vistas = []
+
+    def manejador(req):
+        vistas.append(req)
+        return _respuesta_gemini(json.dumps(
+            {"numero": "PED-9", "cliente": "Acme", "cantidad": 230, "nota": None}))
+
+    borrador = _gemini(manejador).interpretar("pedido PED-9 de Acme, 2 cajas de 100 y 30")
+    assert borrador == {"numero": "PED-9", "cliente": "Acme", "cantidad": 230, "nota": None}
+    req = vistas[0]
+    assert req.url.path == "/v1beta/models/gemini-prueba:generateContent"
+    assert req.headers["x-goog-api-key"] == "clave-g"
+    cuerpo = json.loads(req.content)
+    assert cuerpo["generationConfig"]["responseMimeType"] == "application/json"
+    assert "<pedido>" in cuerpo["contents"][0]["parts"][0]["text"]
+
+
+def test_rf13_gemini_resumen_devuelve_texto():
+    assert _gemini(lambda req: _respuesta_gemini("Va bien.")).resumir("{}") == "Va bien."
+
+
+@pytest.mark.parametrize(
+    "respuesta",
+    [
+        httpx.Response(429, json={"error": {"status": "RESOURCE_EXHAUSTED"}}),
+        httpx.Response(503, json={"error": {"status": "UNAVAILABLE"}}),
+        httpx.Response(200, json={"candidates": []}),
+        _respuesta_gemini("esto no es JSON"),
+    ],
+)
+def test_rf13_errores_de_gemini_se_traducen(respuesta):
+    with pytest.raises(IANoDisponible):
+        _gemini(lambda req: respuesta).interpretar("pedido 1 de Acme 5")
+
+
+def test_rf13_gemini_tiempo_agotado():
+    def manejador(req):
+        raise httpx.ReadTimeout("lento", request=req)
+
+    with pytest.raises(IANoDisponible, match="tardó"):
+        _gemini(manejador).resumir("{}")

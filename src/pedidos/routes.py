@@ -103,7 +103,11 @@ def historial(paquete_id: int, s: DB):
 # --- IA (extra) ---
 @router.get("/ia/estado", response_model=EstadoIA)
 def estado_ia(ia: IA):
-    return EstadoIA(disponible=ia.disponible, modelo=ia.modelo if ia.disponible else None)
+    return EstadoIA(
+        disponible=ia.disponible,
+        modelo=ia.modelo,
+        proveedores=list(dict.fromkeys(p.nombre for p in ia.proveedores)),
+    )
 
 
 @router.post("/ia/interpretar", response_model=Borrador)
@@ -160,4 +164,5 @@ def resumen_ia(ia: IA, s: DB, datos: ResumenIAEntrada | None = None):
         )
     if not compacto:
         return ResumenIASalida(texto="Todavía no hay pedidos registrados.")
-    return ResumenIASalida(texto=ia.resumir(compacto))
+    texto = ia.resumir(compacto)
+    return ResumenIASalida(texto=texto, modelo=ia.modelo)

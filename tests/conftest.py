@@ -31,8 +31,8 @@ def crear_cliente(db_url):
 
     def _crear(ia: AsistenteIA | None = None) -> TestClient:
         app = create_app(
-            Settings(database_url=db_url, anthropic_api_key=""),
-            ia=ia or AsistenteIA(api_key="", modelo="claude-haiku-5-5"),
+            Settings(database_url=db_url, anthropic_api_key="", gemini_api_key=""),
+            ia=ia or AsistenteIA([]),
         )
         c = TestClient(app)
         c.__enter__()

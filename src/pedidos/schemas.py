@@ -90,8 +90,10 @@ class ResumenIAEntrada(BaseModel):
 
 class ResumenIASalida(BaseModel):
     texto: str
+    modelo: str | None = None  # qué modelo generó el texto (RF-13)
 
 
 class EstadoIA(BaseModel):
     disponible: bool
     modelo: str | None = None
+    proveedores: list[str] = []

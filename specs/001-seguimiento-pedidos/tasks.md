@@ -18,4 +18,4 @@ Se implementan en orden. Cada tarea cita los requisitos que cubre.
 - [x] **T14** Proveedores de IA con respaldo: `ProveedorGemini` (REST), `ProveedorAnthropic`, `AsistenteIA` con orden configurable. — RF-12, RF-13
 - [x] **T15** Pruebas de respaldo con proveedores falsos y de Gemini con `httpx.MockTransport`. — RF-13
 - [x] **T16** Rediseño de la interfaz: tokens, tema claro/oscuro con botón, mobile-first, accesibilidad. — RNF-01
-- [ ] **T17** Despliegue con las dos claves y verificación pública. — RF-13
+- [x] **T17** Despliegue con las dos claves y verificación pública. — RF-13

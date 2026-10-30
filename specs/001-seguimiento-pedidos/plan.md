@@ -18,13 +18,13 @@ Navegador ──HTTPS──> Cloudflare Tunnel ──> Orange Pi :5210
 | Modelos | `models.py` | Tablas SQLAlchemy. |
 | Servicios | `services.py` | Casos de uso con transacción; traducen errores de dominio. |
 | API | `routes.py`, `schemas.py` | Contrato HTTP y validación (Pydantic estricto). |
-| IA | `ai.py` | Cliente Claude, prompts y salida estructurada. |
+| IA | `ai.py` | Proveedores Gemini y Claude con respaldo, prompts y salida estructurada. |
 | Config | `config.py`, `db.py` | Variables de entorno, motor y sesiones. |
 
 ## Tecnología
 Python 3.13, FastAPI, SQLAlchemy 2, Pydantic 2, psycopg 3, uv,
-SDK `anthropic` (modelo `claude-haiku-5-5` por defecto, configurable con
-`AI_MODEL`), pytest + httpx. Frontend sin framework ni paso de compilación.
+Gemini por REST con `httpx` (modelo `gemini-3.5-flash-lite`, `GEMINI_MODEL`) y
+SDK `anthropic` (modelo `claude-haiku-5-5`, `AI_MODEL`), orden en `AI_ORDER`, pytest + httpx. Frontend sin framework ni paso de compilación.
 
 ## Modelo de datos
 ```
@@ -95,9 +95,20 @@ escritor.
 - El texto del usuario va como dato dentro de etiquetas, no como
   instrucción. Errores del SDK → 503.
 - Pruebas: se inyecta un cliente falso (sin red).
+- **Proveedores (RF-13):** `ProveedorGemini` llama a
+  `POST /v1beta/models/{modelo}:generateContent` con `httpx` (header
+  `x-goog-api-key`, `responseMimeType=application/json` + `responseSchema`
+  para el borrador); no agrega dependencias. `ProveedorAnthropic` envuelve el
+  SDK. Ambos traducen sus errores a `IANoDisponible`. `AsistenteIA` recibe la
+  lista ordenada y, ante `IANoDisponible`, pasa al siguiente; recuerda cuál
+  respondió para informarlo. Timeout por proveedor `AI_TIMEOUT` (20 s).
 
 ## Interfaz
-Página única: encabezado con métricas globales, formulario de alta (+ caja
+Página única, mobile-first (una columna en teléfono, dos desde ~900 px).
+Tokens de color en `:root`; el tema oscuro reusa los mismos tonos con otra
+luminosidad. `data-theme` en `<html>` (sistema / claro / oscuro) con un
+script en `<head>` que lo aplica antes de pintar y `localStorage` para
+recordarlo. Encabezado con métricas globales, formulario de alta (+ caja
 "Escribir con IA"), lista de pedidos con barra de avance y conteos, panel de
 detalle con un tablero de 4 columnas (una por estado) con tarjetas de
 paquete y botones Avanzar / Rechazar, historial por paquete y botón

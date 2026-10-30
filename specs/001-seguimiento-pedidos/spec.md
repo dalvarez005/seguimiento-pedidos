@@ -100,12 +100,26 @@ de todos los pedidos: avance, paquetes atascados, rechazos frecuentes y
 siguiente acción sugerida. Se basa solo en los datos enviados.
 
 ### RF-12 IA opcional
-Si no hay `ANTHROPIC_API_KEY`, `GET /api/ia/estado` responde
-`{"disponible": false}`, la interfaz oculta las funciones de IA y el resto de
+Si no hay ninguna clave de IA (`GEMINI_API_KEY` ni `ANTHROPIC_API_KEY`),
+`GET /api/ia/estado` responde `{"disponible": false}`, la interfaz oculta las funciones de IA y el resto de
 la aplicación funciona igual. Errores de la IA → HTTP 503 con mensaje claro.
 
+### RF-13 Respaldo entre proveedores de IA
+Hay dos proveedores: Gemini y Claude. Se prueban en el orden de `AI_ORDER`
+(por defecto `gemini,anthropic`) y solo se usan los que tienen clave. Si uno
+falla (sin saldo, límite de uso, error 4xx/5xx, tiempo de espera agotado,
+error de conexión o respuesta inválida), la misma solicitud se repite con el
+siguiente sin que el usuario haga nada. Si todos fallan → HTTP 503 con un
+mensaje en español. `GET /api/ia/estado` lista los proveedores activos y el
+resumen indica qué modelo lo generó.
+- *Aceptación:* con Gemini caído y Claude disponible, `/api/ia/interpretar`
+  responde 200 con el borrador de Claude; con ambos caídos responde 503.
+
 ## 5. Requisitos no funcionales
-- **RNF-01** Interfaz en español, responsive (desde 360 px de ancho).
+- **RNF-01** Interfaz en español, responsive desde 320 px sin scroll
+  horizontal, con tema claro y oscuro de la misma paleta (sigue al sistema y
+  se puede cambiar con un botón que se recuerda), contraste WCAG AA, foco
+  visible con teclado y respeto de `prefers-reduced-motion`.
 - **RNF-02** Las reglas de negocio se validan en el servidor.
 - **RNF-03** Operaciones concurrentes: avanzar/rechazar usa bloqueo de fila
   (o equivalente) para no saltar estados con dos clics simultáneos.

@@ -1,0 +1,20 @@
+# Usa el PostgreSQL que ya corre en el servidor (base "pedidos").
+name: pedidos
+
+services:
+  app:
+    build: .
+    image: pedidos-app:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${APP_PORT:-5210}:8080"
+    mem_limit: 200m
+    extra_hosts:
+      # Para llegar al PostgreSQL del propio servidor desde el contenedor.
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

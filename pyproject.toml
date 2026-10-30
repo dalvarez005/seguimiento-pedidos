@@ -1,0 +1,29 @@
+[project]
+name = "pedidos"
+version = "1.0.0"
+description = "Seguimiento de pedidos por paquetes (prueba técnica, SDD con agente de IA)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "anthropic>=0.70",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "httpx>=0.28"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pedidos"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

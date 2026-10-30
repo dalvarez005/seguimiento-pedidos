@@ -59,7 +59,7 @@ class AsistenteIA:
     def disponible(self) -> bool:
         return self._cliente is not None
 
-    def _requerir(self) -> anthropic.Anthropic:
+    def requerir(self) -> anthropic.Anthropic:
         if self._cliente is None:
             raise IANoDisponible("Las funciones de IA no están configuradas en este servidor.")
         return self._cliente
@@ -80,7 +80,7 @@ class AsistenteIA:
         return respuesta
 
     def interpretar(self, texto: str) -> dict:
-        cliente = self._requerir()
+        cliente = self.requerir()
         r = self._llamar(
             lambda: cliente.messages.parse(
                 model=self.modelo,
@@ -96,7 +96,7 @@ class AsistenteIA:
         return datos.model_dump()
 
     def resumir(self, datos: list[dict]) -> str:
-        cliente = self._requerir()
+        cliente = self.requerir()
         contenido = json.dumps(datos, ensure_ascii=False, separators=(",", ":"))
         r = self._llamar(
             lambda: cliente.messages.create(

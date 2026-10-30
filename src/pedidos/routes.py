@@ -138,6 +138,7 @@ def interpretar(datos: InterpretarEntrada, ia: IA, s: DB):
 
 @router.post("/ia/resumen", response_model=ResumenIASalida)
 def resumen_ia(ia: IA, s: DB, datos: ResumenIAEntrada | None = None):
+    ia.requerir()  # RF-12: sin IA configurada es 503 aunque no haya pedidos
     if datos and datos.numero:
         pedidos = [sv.obtener_pedido(s, datos.numero)]
     else:

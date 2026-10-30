@@ -1,7 +1,5 @@
 # Seguimiento de Pedidos
 
-[![Pruebas](https://github.com/dalvarez005/seguimiento-pedidos/actions/workflows/tests.yml/badge.svg)](https://github.com/dalvarez005/seguimiento-pedidos/actions/workflows/tests.yml)
-
 Aplicación web para registrar pedidos, dividirlos automáticamente en paquetes
 de hasta 100 unidades y seguir el avance de cada paquete por los estados
 **Pendiente → En proceso → Revisión → Listo**.
@@ -116,7 +114,8 @@ TEST_DATABASE_URL=postgresql+psycopg://postgres:test@localhost:5432/pedidos_test
 - **IA:** con un cliente simulado (sin red ni costo): borrador, campos
   faltantes, número repetido, errores del servicio → 503, sin clave → 503.
 
-GitHub Actions corre todo en SQLite y en PostgreSQL en cada push.
+El flujo de GitHub Actions (`.github/workflows/tests.yml`, corre todo en
+SQLite y PostgreSQL) está listo, pero ver "Pendientes".
 
 ## Cómo se aplicó SDD
 
@@ -164,6 +163,11 @@ las funciones de IA responden 503 y la interfaz las oculta).
 
 ## Pendientes y posibles mejoras
 
-Todo lo pedido está implementado. Fuera de alcance por decisión de la spec:
+Todos los requisitos de la prueba están implementados, probados y publicados.
+
+- **CI en GitHub Actions:** el archivo está escrito y probado localmente, pero
+  no se pudo subir: el token de GitHub usado por el agente no tenía el permiso
+  `workflow`, y GitHub rechaza esos archivos sin él. Se subirá en cuanto se
+  autorice el permiso. Fuera de alcance por decisión de la spec:
 autenticación de usuarios, edición/borrado de pedidos y migraciones de base de
 datos versionadas (hoy las tablas se crean al iniciar).

@@ -1,1 +1,99 @@
-<!doctype html><title>Seguimiento de Pedidos</title>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seguimiento de Pedidos</title>
+  <meta name="description" content="Registro de pedidos y seguimiento de su avance por paquetes.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f3a4d'/><path d='M8 12l8-4 8 4v9l-8 4-8-4z' fill='none' stroke='%23f4f1ea' stroke-width='2' stroke-linejoin='round'/><path d='M8 12l8 4 8-4M16 16v9' fill='none' stroke='%23f4f1ea' stroke-width='2' stroke-linejoin='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="marca">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 12l8-4 8 4v9l-8 4-8-4z"/><path d="M8 12l8 4 8-4M16 16v9"/></svg>
+      <div>
+        <h1>Seguimiento de pedidos</h1>
+        <p>Pedidos divididos en paquetes de hasta 100 unidades</p>
+      </div>
+    </div>
+    <dl class="kpis" id="kpis" aria-live="polite"></dl>
+  </header>
+
+  <main class="layout">
+    <aside class="lateral">
+      <section class="tarjeta" aria-labelledby="t-nuevo">
+        <div class="tarjeta-cab">
+          <h2 id="t-nuevo">Nuevo pedido</h2>
+        </div>
+
+        <div class="ia-caja" id="ia-caja" hidden>
+          <label for="ia-texto" class="ia-etq">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2l1.6 4.4L16 8l-4.4 1.6L10 14l-1.6-4.4L4 8l4.4-1.6zM15.5 13l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>
+            Escríbelo con tus palabras
+          </label>
+          <textarea id="ia-texto" rows="2" maxlength="1000" placeholder="Ej.: pedido PED-1042 para Ferretería López, doscientas cincuenta unidades"></textarea>
+          <div class="ia-acciones">
+            <span class="ayuda">La IA llena el formulario; tú confirmas.</span>
+            <button type="button" class="btn btn-sec" id="ia-interpretar">Llenar formulario</button>
+          </div>
+          <p class="ia-nota" id="ia-nota" hidden></p>
+        </div>
+
+        <form id="form-pedido" novalidate>
+          <div class="campo">
+            <label for="f-numero">Número de pedido</label>
+            <input id="f-numero" name="numero" maxlength="40" autocomplete="off" required placeholder="PED-1042">
+            <p class="error-campo" id="e-numero"></p>
+          </div>
+          <div class="campo">
+            <label for="f-cliente">Cliente</label>
+            <input id="f-cliente" name="cliente" maxlength="120" autocomplete="off" required placeholder="Ferretería López">
+            <p class="error-campo" id="e-cliente"></p>
+          </div>
+          <div class="campo">
+            <label for="f-cantidad">Cantidad de unidades</label>
+            <input id="f-cantidad" name="cantidad" inputmode="numeric" autocomplete="off" required placeholder="250">
+            <p class="error-campo" id="e-cantidad"></p>
+          </div>
+          <div class="vista-previa" id="vista-previa" aria-live="polite"></div>
+          <button class="btn btn-pri" type="submit" id="btn-crear">Registrar pedido</button>
+          <p class="error-form" id="e-form" role="alert"></p>
+        </form>
+      </section>
+
+      <section class="tarjeta ia-resumen" id="ia-resumen-global" hidden>
+        <div class="tarjeta-cab">
+          <h2>Resumen general con IA</h2>
+          <button type="button" class="btn btn-sec btn-sm" data-resumen="">Generar</button>
+        </div>
+        <div class="ia-texto-salida" data-salida=""></div>
+      </section>
+    </aside>
+
+    <section class="principal">
+      <section class="tarjeta" aria-labelledby="t-lista">
+        <div class="tarjeta-cab">
+          <h2 id="t-lista">Pedidos</h2>
+          <input type="search" id="buscar" placeholder="Buscar número o cliente" aria-label="Buscar pedido">
+        </div>
+        <div class="leyenda" aria-hidden="true">
+          <span><i class="pt pendiente"></i>Pendiente</span>
+          <span><i class="pt en_proceso"></i>En proceso</span>
+          <span><i class="pt revision"></i>Revisión</span>
+          <span><i class="pt listo"></i>Listo</span>
+        </div>
+        <ul class="lista" id="lista"></ul>
+      </section>
+
+      <section class="tarjeta detalle" id="detalle" hidden aria-live="polite"></section>
+    </section>
+  </main>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

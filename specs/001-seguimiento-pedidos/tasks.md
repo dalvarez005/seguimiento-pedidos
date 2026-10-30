@@ -10,7 +10,7 @@ Se implementan en orden. Cada tarea cita los requisitos que cubre.
 - [x] **T06** Rutas de la API, manejo de errores en español, `/health`.
 - [x] **T07** Pruebas de API: creación, validación, duplicados, flujo completo, rechazo, persistencia. — RF-01..RF-09
 - [x] **T08** Módulo IA (`interpretar`, `resumen`, `estado`) + pruebas con cliente falso. — RF-10, RF-11, RF-12
-- [ ] **T09** Interfaz web (alta, lista, tablero por estados, historial, IA). — HU-1..HU-5, RNF-01
+- [x] **T09** Interfaz web (alta, lista, tablero por estados, historial, IA). — HU-1..HU-5, RNF-01
 - [ ] **T10** Docker, compose y script de despliegue. — RNF-04
 - [ ] **T11** CI en GitHub Actions. — RNF-05
 - [ ] **T12** README (instalación, pruebas, SDD, error del agente y su corrección, pendientes).

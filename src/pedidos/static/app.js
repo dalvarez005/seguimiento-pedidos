@@ -154,7 +154,7 @@ function renderKpis() {
     ["Unidades", fmt(total)],
     ["En revisión", `${fmt(revision)}<small> paq.</small>`],
     ["Avance global", total ? pct(Math.round((listas * 1000) / total) / 10) : "—"],
-  ].map(([k, v]) => `<div><dt class="etq">${k}</dt><dd>${v}</dd></div>`).join("");
+  ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
   $("#cuenta").textContent = ps.length ? `· ${fmt(ps.length)}` : "";
 }
 
@@ -169,7 +169,7 @@ function renderIA() {
     return;
   }
   const nombres = ia.proveedores.map((p) => NOMBRE_PROVEEDOR[p] || p);
-  $("#ia-estado-txt").textContent = `IA · ${nombreModelo(ia.modelo)}`;
+  $("#ia-estado-txt").innerHTML = `IA<span class="ia-modelo"> · ${esc(nombreModelo(ia.modelo))}</span>`;
   caja.title = `IA activa. Orden: ${nombres.join(" → ")}. Si uno falla, responde el siguiente.`;
 }
 
@@ -228,12 +228,18 @@ function fichaPaquete(p) {
   const abierto = estado.abiertos.has(p.id);
   const hist = abierto ? `<ul class="hist" data-hist="${p.id}"><li>Cargando…</li></ul>` : "";
   const movida = estado.movidos.has(p.id);
+  // Los paquetes listos se muestran en una línea, con el historial como ícono.
+  const compacta = p.estado === "listo";
+  const textoHist = abierto ? "Ocultar historial" : "Historial";
+  const botonHist = compacta
+    ? `<button class="btn-icono hist-btn" data-historial="${p.id}" aria-expanded="${abierto}" aria-label="${textoHist} del paquete ${p.indice}" title="${textoHist}">${icono("historial")}</button>`
+    : `<button class="btn-txt" data-historial="${p.id}" aria-expanded="${abierto}">${icono("historial")}${textoHist}</button>`;
   return `<article class="ficha ${p.estado} ${movida ? "movida" : ""} ${ocupado ? "ocupada" : ""}" data-paquete="${p.id}" aria-label="Paquete ${p.indice}, ${p.unidades} unidades, ${NOMBRE[p.estado]}">
     ${movida ? `<span class="marca-movida etq">Movido</span>` : ""}
-    <div class="linea"><span class="nom etq">Paquete ${String(p.indice).padStart(2, "0")}</span><span class="u">${fmt(p.unidades)}<small> u</small></span></div>
+    <div class="linea"><span class="nom etq">Paquete ${String(p.indice).padStart(2, "0")}</span><span class="u">${fmt(p.unidades)}<small> u</small></span>${compacta ? botonHist : ""}</div>
     ${botones ? `<div class="botones">${botones}</div>` : ""}
     ${rechazo}
-    <button class="btn-txt" data-historial="${p.id}" aria-expanded="${abierto}">${icono("historial")}${abierto ? "Ocultar historial" : "Historial"}</button>
+    ${compacta ? "" : botonHist}
     ${hist}
   </article>`;
 }

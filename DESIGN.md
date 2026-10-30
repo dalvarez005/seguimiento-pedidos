@@ -1,51 +1,49 @@
 # Design
 
-Sistema visual de la interfaz (`src/pedidos/static`). Dirección: **casillero de clasificación**.
-Cada estado es una casilla hundida y cada paquete es una ficha que se desliza a la casilla
-siguiente al avanzar. Pantalla de trabajo (modo *operate*): controles web estándar y la
-identidad solo en tipografía, paleta, densidad y un gesto propio.
+Sistema visual de la interfaz (`src/pedidos/static`). Estilo **nítido**: neutros limpios,
+negro como color principal y el color reservado a los cuatro estados del paquete. Pantalla
+de trabajo: controles web estándar, jerarquía por peso y tamaño, nada decorativo.
 
 ## Color
-Una paleta, dos luminosidades. Los tokens viven en `:root` y el tema oscuro los redefine
+Una paleta, dos temas. Los tokens viven en `:root`; el tema oscuro los redefine
 (`prefers-color-scheme` o `data-theme` en `<html>`, guardado en `localStorage` como `tema`).
 
 | Rol | Claro | Oscuro | Uso |
 |---|---|---|---|
-| `--shell` | `#1f3d33` | `#16302a` | Verde máquina: encabezado y avisos |
-| `--fondo` / `--superficie` | `#e7ebe8` / `#f8f9f7` | `#0e1512` / `#151e1a` | Acero: fondo y paneles |
-| `--casilla` | `#dde3df` | `#101814` | Interior hundido de casillas, barras y chips |
-| `--primario` | `#2f5f4d` | `#4a8c72` | Acción principal |
-| `--laton` | `#9c7a2f` | `#c9a14a` | Selección, foco, cambio reciente, IA |
-| Estados | `#6f7a85` `#c98a0c` `#7556c2` `#2c8a55` | `#94a0ab` `#eeb13a` `#a58ce9` `#4fc185` | Pendiente, En proceso, Revisión, Listo |
-| `--peligro` | `#b0392a` | `#f0806e` | Rechazo y errores |
+| `--fondo` / `--superficie` | `#fafafa` / `#ffffff` | `#0a0a0a` / `#111111` | Página y paneles |
+| `--superficie-2` / `--hundido` | `#f4f4f5` | `#1a1a1a` / `#161616` | Columnas, hover, cajas de IA |
+| `--borde` | `#e5e5e5` | `#262626` | Bordes de 1 px |
+| `--texto` / `-2` / `-3` | `#0a0a0a` / `#525252` / `#666` | `#fafafa` / `#a3a3a3` / `#8f8f8f` | Texto |
+| `--primario` | `#0a0a0a` | `#fafafa` | Botón principal y "Avanzar"; se invierte en oscuro |
+| Estados | `#a3a3a3` `#f59e0b` `#8b5cf6` `#22c55e` | `#8a8a8a` `#fbbf24` `#a78bfa` `#4ade80` | Pendiente, En proceso, Revisión, Listo |
+| `--peligro` | `#dc2626` | `#f87171` | Rechazo y errores |
 
-Pares de texto verificados con WCAG AA (≥ 4.5:1) en ambos temas.
+El violeta de Revisión marca también lo relacionado con la IA (ícono y viñetas).
+Contraste de texto ≥ 4.5:1 en ambos temas.
 
 ## Tipografía
-Una familia, **Archivo** (Google Fonts, ejes de ancho y peso). Etiquetas de porta-etiquetas
-(`.etq`): ancho 75 %, mayúsculas, 12 px, tracking .06em. Números de pedido y porcentajes
-condensados al 80–85 %. Cifras tabulares en todo el documento. Escala fija en rem (12–28 px).
+**Geist** para la interfaz y **Geist Mono** para datos: porcentajes, unidades, número de
+paquete, fechas y la etiqueta de IA. Cifras tabulares en todo el documento. Escala fija en
+rem (11–24 px), tracking negativo en títulos.
 
 ## Espacio y forma
-Escala de 4 px (`--e1`…`--e7`). Radio de 8 px en paneles y de 5 px en controles. Profundidad
-con sombras suaves desplazadas en paneles y fichas, e `inset` en casillas y campos.
+Escala de 4 px (`--e1`…`--e7`). Radios de 12 / 10 / 7 px (panel / ficha / control).
+Bordes de 1 px y sombras mínimas; la sombra grande solo en avisos y en la ficha movida.
 
 ## Componentes
-- **Ficha de paquete:** franja superior de 3 px con el color del estado, etiqueta condensada,
-  unidades grandes y botones "A {siguiente}" y "Rechazar". `.movida` = borde de latón con la
-  etiqueta "Movido" hasta que la persona la ve (puntero, foco o toque).
-- **Casilla:** cabecera tipo porta-etiqueta (estado, cantidad de paquetes y unidades).
-- **Pestañas de casilla** (< 720 px): una casilla visible a la vez, conteo grande, barra de
-  color y punto de latón si hubo cambios.
-- **Fila de pedido:** botón con número, cliente, % y barra segmentada por estado.
-  Seleccionada = fondo y borde de latón.
-- Botones: primario, secundario, peligro y de texto; estados hover, foco, deshabilitado y
-  ocupado (`aria-busy`).
+- **Barra superior** fija con desenfoque: marca, estado de la IA y botón de tema.
+- **Métricas:** una tarjeta dividida en 5 celdas (3 + 2 en el celular).
+- **Fila de pedido:** número, cliente, % y unidades en mono, barra segmentada y conteos.
+- **Columna por estado:** fondo hundido, cabecera con punto de color y conteo en mono.
+- **Ficha de paquete:** "A {siguiente}" en negro y "Rechazar" con borde rojo. En Listo,
+  una sola línea con el historial como ícono. `.movida` = anillo del color de texto y la
+  etiqueta "Movido" hasta que la persona la ve.
+- **Pestañas de estado** (< 720 px): una columna visible a la vez.
 
 ## Movimiento
-Un solo gesto: la ficha se desliza (FLIP, 280 ms, ease-out) a su nueva casilla. Lo demás son
-transiciones de 150–200 ms. Todo se apaga con `prefers-reduced-motion`.
+La ficha se desliza a su nueva columna (FLIP, 280 ms, ease-out); el resto son transiciones de
+150–200 ms. Todo se apaga con `prefers-reduced-motion`.
 
 ## Distribución
-Mobile-first: una columna (alta plegable, lista y detalle). Desde 720 px, 4 casillas en fila.
-Desde 1100 px, lista lateral fija y detalle a la derecha. Sin scroll horizontal desde 320 px.
+Mobile-first: una columna. Desde 720 px, 4 columnas de estado y 5 métricas en fila. Desde
+1100 px, lista lateral fija y detalle a la derecha. Sin scroll horizontal desde 320 px.

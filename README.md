@@ -37,13 +37,12 @@ de IA.
   resto funciona igual.
 - **Historial** de movimientos por paquete (quién pasó de qué estado a cuál,
   y motivo de rechazo).
-- **Interfaz tipo casillero de clasificación:** cada estado es una casilla y
-  cada paquete una ficha que se desliza a la siguiente al avanzar; lo que
-  cambia queda marcado hasta que lo ves. Tema claro y oscuro con la misma
-  paleta (sigue al sistema y se cambia con un botón que se recuerda),
-  responsive desde 320 px (en el celular las casillas son pestañas), contraste
-  WCAG AA y navegación con teclado. Indicadores globales, búsqueda y enlace
-  directo a un pedido (`/#PED-1001`). Sistema visual en `DESIGN.md`.
+- **Interfaz nítida:** neutros limpios con el color reservado a los estados.
+  Una columna por estado; cada paquete es una ficha que se desliza a la
+  siguiente al avanzar y queda marcada hasta que la ves. Tema claro y oscuro
+  con la misma paleta (sigue al sistema y se cambia con un botón que se
+  recuerda), responsive desde 320 px (en el celular los estados son pestañas),
+  contraste WCAG AA y navegación con teclado. Sistema visual en `DESIGN.md`.
 
 ## Tecnología
 

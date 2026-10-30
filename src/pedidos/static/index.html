@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Seguimiento de Pedidos</title>
   <meta name="description" content="Registro de pedidos y seguimiento de su avance por paquetes.">
-  <meta name="theme-color" content="#1f3d33" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#13261f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
   <meta name="color-scheme" content="light dark">
   <script>
     // Aplica el tema guardado antes de pintar para que no parpadee.
@@ -16,10 +16,10 @@
       if (t === "oscuro") document.documentElement.dataset.theme = "dark";
     } catch (e) {}
   </script>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231f3d33'/><path d='M7 8h18v16H7zM7 16h18M13 8v16M19 8v16' fill='none' stroke='%23e9ece9' stroke-width='2'/><rect x='20' y='17.5' width='3.5' height='5' fill='%23c9a14a'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0a0a'/><path d='M8 9h16v14H8zM8 16h16M13.3 9v14M18.7 9v14' fill='none' stroke='%23fafafa' stroke-width='2'/><rect x='19.7' y='17' width='3.3' height='5' fill='%23f59e0b'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -45,7 +45,7 @@
       <div class="marca">
         <svg class="i marca-icono" aria-hidden="true"><use href="#i-marca"/></svg>
         <div>
-          <h1>Seguimiento de pedidos</h1>
+          <h1><span class="h-largo">Seguimiento de pedidos</span><span class="h-corto" aria-hidden="true">Pedidos</span></h1>
           <p>Cada pedido se clasifica en paquetes de hasta 100 unidades</p>
         </div>
       </div>
@@ -58,8 +58,11 @@
         </button>
       </div>
     </div>
-    <dl class="kpis" id="kpis" aria-live="polite"></dl>
   </header>
+
+  <div class="metricas">
+    <dl class="kpis" id="kpis" aria-live="polite"></dl>
+  </div>
 
   <main class="layout" id="principal">
     <aside class="lateral">

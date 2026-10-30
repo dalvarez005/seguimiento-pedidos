@@ -105,8 +105,8 @@ escritor.
 
 ## Interfaz
 Página única, mobile-first (una columna en teléfono, dos desde ~900 px).
-Tokens de color en `:root`; el tema oscuro reusa los mismos tonos con otra
-luminosidad. `data-theme` en `<html>` (sistema / claro / oscuro) con un
+Tokens de color en `:root` (neutros, negro como primario y color solo en los
+estados); el tema oscuro invierte la misma paleta. `data-theme` en `<html>` (sistema / claro / oscuro) con un
 script en `<head>` que lo aplica antes de pintar y `localStorage` para
 recordarlo. Encabezado con métricas globales, formulario de alta (+ caja
 "Escribir con IA"), lista de pedidos con barra de avance y conteos, panel de

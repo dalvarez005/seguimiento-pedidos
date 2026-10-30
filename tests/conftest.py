@@ -1,4 +1,7 @@
+import os
+
 import pytest
+from sqlalchemy import create_engine
 from fastapi.testclient import TestClient
 
 from pedidos.ai import AsistenteIA
@@ -8,7 +11,17 @@ from pedidos.config import Settings
 
 @pytest.fixture
 def db_url(tmp_path):
-    return f"sqlite:///{tmp_path / 'pruebas.db'}"
+    """SQLite temporal, o PostgreSQL si se define TEST_DATABASE_URL (CI)."""
+    url = os.environ.get("TEST_DATABASE_URL")
+    if not url:
+        yield f"sqlite:///{tmp_path / 'pruebas.db'}"
+        return
+    yield url
+    from pedidos.db import Base
+
+    engine = create_engine(url)
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture

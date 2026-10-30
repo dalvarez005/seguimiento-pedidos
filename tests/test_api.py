@@ -200,3 +200,18 @@ def test_rf09_transicion_invalida_no_deja_evento(client, nuevo_pedido):
     paq = nuevo_pedido(cantidad=10)["paquetes"][0]
     rechazar(client, paq["id"])
     assert client.get(f"/api/paquetes/{paq['id']}/historial").json() == []
+
+
+# RNF-03: clics simultáneos no saltan estados (bloqueo de fila; solo PostgreSQL)
+def test_rnf03_avances_simultaneos_no_saltan_estados(client, nuevo_pedido, db_url):
+    if not db_url.startswith("postgresql"):
+        pytest.skip("requiere PostgreSQL (TEST_DATABASE_URL)")
+    from concurrent.futures import ThreadPoolExecutor
+
+    paq = nuevo_pedido(cantidad=10)["paquetes"][0]
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        codigos = list(ex.map(lambda _: avanzar(client, paq["id"]).status_code, range(8)))
+    assert codigos.count(200) == 3
+    assert codigos.count(409) == 5
+    eventos = client.get(f"/api/paquetes/{paq['id']}/historial").json()
+    assert [e["estado_destino"] for e in eventos] == ["en_proceso", "revision", "listo"]

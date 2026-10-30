@@ -12,7 +12,7 @@ Se implementan en orden. Cada tarea cita los requisitos que cubre.
 - [x] **T08** Módulo IA (`interpretar`, `resumen`, `estado`) + pruebas con cliente falso. — RF-10, RF-11, RF-12
 - [x] **T09** Interfaz web (alta, lista, tablero por estados, historial, IA). — HU-1..HU-5, RNF-01
 - [x] **T10** Docker, compose y script de despliegue. — RNF-04
-- [ ] **T11** CI en GitHub Actions. — RNF-05 *(escrito; pendiente de subir por permiso `workflow` del token)*
+- [x] **T11** CI en GitHub Actions (SQLite y PostgreSQL en cada PR y en cada push a `main`). — RNF-05
 - [x] **T12** README (instalación, pruebas, SDD, error del agente y su corrección, pendientes).
 - [x] **T13** Despliegue en la Orange Pi + hostname en Cloudflare + verificación pública.
 - [x] **T14** Proveedores de IA con respaldo: `ProveedorGemini` (REST), `ProveedorAnthropic`, `AsistenteIA` con orden configurable. — RF-12, RF-13

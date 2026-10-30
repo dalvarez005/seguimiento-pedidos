@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "anthropic>=0.70",
+    "httpx2>=2.16",  # cliente HTTP para Gemini (ya lo trae anthropic)
 ]
 
 [dependency-groups]

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import anthropic
 import httpx
+import httpx2
 import pytest
 
 from pedidos.ai import (
@@ -233,12 +234,12 @@ def test_rf13_config_arma_proveedores_segun_orden_y_claves():
 
 
 def _gemini(manejador):
-    http = httpx.Client(transport=httpx.MockTransport(manejador))
+    http = httpx2.Client(transport=httpx2.MockTransport(manejador))
     return ProveedorGemini("clave-g", "gemini-prueba", http=http)
 
 
 def _respuesta_gemini(texto):
-    return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": texto}]}}]})
+    return httpx2.Response(200, json={"candidates": [{"content": {"parts": [{"text": texto}]}}]})
 
 
 def test_rf13_gemini_envia_solicitud_correcta_y_parsea_el_borrador():
@@ -266,9 +267,9 @@ def test_rf13_gemini_resumen_devuelve_texto():
 @pytest.mark.parametrize(
     "respuesta",
     [
-        httpx.Response(429, json={"error": {"status": "RESOURCE_EXHAUSTED"}}),
-        httpx.Response(503, json={"error": {"status": "UNAVAILABLE"}}),
-        httpx.Response(200, json={"candidates": []}),
+        httpx2.Response(429, json={"error": {"status": "RESOURCE_EXHAUSTED"}}),
+        httpx2.Response(503, json={"error": {"status": "UNAVAILABLE"}}),
+        httpx2.Response(200, json={"candidates": []}),
         _respuesta_gemini("esto no es JSON"),
     ],
 )
@@ -279,7 +280,7 @@ def test_rf13_errores_de_gemini_se_traducen(respuesta):
 
 def test_rf13_gemini_tiempo_agotado():
     def manejador(req):
-        raise httpx.ReadTimeout("lento", request=req)
+        raise httpx2.ReadTimeout("lento", request=req)
 
     with pytest.raises(IANoDisponible, match="tardó"):
         _gemini(manejador).resumir("{}")

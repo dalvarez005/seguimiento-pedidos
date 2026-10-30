@@ -13,7 +13,7 @@ uv run pytest -q
 echo "→ Copiando a $SERVIDOR:~/$DESTINO"
 rsync -az --delete \
   --exclude .venv --exclude .git --exclude .pytest_cache --exclude '__pycache__' \
-  --exclude '*.db' --exclude .env \
+  --exclude '*.db' --exclude .env --exclude .impeccable \
   ./ "$SERVIDOR:$DESTINO/"
 
 echo "→ Construyendo y levantando"

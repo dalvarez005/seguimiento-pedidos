@@ -8,7 +8,7 @@ import json
 import logging
 
 import anthropic
-import httpx
+import httpx2 as httpx
 from pydantic import BaseModel
 
 log = logging.getLogger(__name__)

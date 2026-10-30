@@ -3,8 +3,8 @@
 Se implementan en orden. Cada tarea cita los requisitos que cubre.
 
 - [x] **T01** Estructura del proyecto: `pyproject.toml`, dependencias, `config.py`, `.env.example`, `.gitignore`.
-- [ ] **T02** Pruebas del dominio (división, transiciones, rechazo, avance). — RF-02, RF-05, RF-06, RF-07
-- [ ] **T03** Implementar `domain.py` hasta que T02 pase.
+- [x] **T02** Pruebas del dominio (división, transiciones, rechazo, avance). — RF-02, RF-05, RF-06, RF-07
+- [x] **T03** Implementar `domain.py` hasta que T02 pase.
 - [ ] **T04** Modelos SQLAlchemy y `db.py` (UNIQUE de `numero_clave`, CHECKs). — RF-04, RF-08
 - [ ] **T05** Esquemas Pydantic estrictos y servicios (crear, avanzar, rechazar, historial, resumen). — RF-01, RF-03, RF-04, RF-09
 - [ ] **T06** Rutas de la API, manejo de errores en español, `/health`.

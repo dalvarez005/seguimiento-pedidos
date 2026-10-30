@@ -162,6 +162,29 @@ las funciones de IA responden 503 y la interfaz las oculta).
 - **Lección:** el agente optimizó un caso borde sin revisar la spec; escribir
   las pruebas desde los requisitos (y no desde el código) es lo que lo atrapó.
 
+**Segundo error: la app funcionaba en local pero se caía en producción.**
+
+Al agregar Gemini como proveedor de respaldo (RF-13), el agente escribió el
+cliente HTTP con `import httpx`. En su máquina todo pasaba: las 90 pruebas en
+verde y la IA respondiendo. Al desplegar, el contenedor no arrancaba:
+`ModuleNotFoundError: No module named 'httpx'`.
+
+- **Causa:** `httpx` estaba instalado solo como dependencia de desarrollo (lo
+  usan las pruebas). El agente supuso que llegaba con el SDK `anthropic`, pero
+  en el `uv.lock` ese SDK depende de `httpx2`, otro paquete. La imagen de
+  producción instala solo dependencias de producción (`uv sync --no-dev`), así
+  que el módulo no existía.
+- **Cómo se detectó:** el script de despliegue verifica `/health` después de
+  levantar el contenedor; falló y los logs de Docker mostraron el error.
+- **Corrección:** se usa `httpx2` (la dependencia real del SDK, así la imagen no
+  crece), se declaró como dependencia directa en `pyproject.toml` y se comprobó
+  importando la app sin dependencias de desarrollo
+  (`uv run --no-dev python -c "import pedidos.app"`). Commit
+  `fix(ia): usar httpx2 …`.
+- **Lección:** que pasen las pruebas en local no garantiza que el entorno de
+  producción tenga las mismas dependencias; conviene probar el arranque con el
+  mismo conjunto de paquetes que se despliega.
+
 **Otros dos tropiezos menores del agente durante el desarrollo**
 
 - **Paquete no instalado:** el agente corrió `uv sync` cuando `src/pedidos`
@@ -180,10 +203,10 @@ Todos los requisitos de la prueba están implementados, probados y publicados.
 - **Saldo de Claude:** la clave de Claude está configurada, pero la cuenta de
   la API no tiene crédito (la suscripción Claude Pro no lo incluye). Mientras
   tanto responde Gemini; Claude entra solo cuando se cargue saldo.
-
 - **CI en GitHub Actions:** el archivo está escrito y probado localmente, pero
   no se pudo subir: el token de GitHub usado por el agente no tenía el permiso
   `workflow`, y GitHub rechaza esos archivos sin él. Se subirá en cuanto se
-  autorice el permiso. Fuera de alcance por decisión de la spec:
-autenticación de usuarios, edición/borrado de pedidos y migraciones de base de
-datos versionadas (hoy las tablas se crean al iniciar).
+  autorice el permiso.
+- **Fuera de alcance por decisión de la spec:** autenticación de usuarios,
+  edición/borrado de pedidos y migraciones de base de datos versionadas (hoy
+  las tablas se crean al iniciar).

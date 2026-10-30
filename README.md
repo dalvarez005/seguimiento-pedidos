@@ -1,5 +1,7 @@
 # Seguimiento de Pedidos
 
+[![Pruebas](https://github.com/dalvarez005/seguimiento-pedidos/actions/workflows/tests.yml/badge.svg)](https://github.com/dalvarez005/seguimiento-pedidos/actions/workflows/tests.yml)
+
 Aplicación web para registrar pedidos, dividirlos automáticamente en paquetes
 de hasta 100 unidades y seguir el avance de cada paquete por los estados
 **Pendiente → En proceso → Revisión → Listo**.
@@ -126,8 +128,9 @@ TEST_DATABASE_URL=postgresql+psycopg://postgres:test@localhost:5432/pedidos_test
   503; orden configurable; solicitud a Gemini y sus errores (429, 503,
   respuesta vacía o JSON inválido, tiempo agotado) con `httpx.MockTransport`.
 
-El flujo de GitHub Actions (`.github/workflows/tests.yml`, corre todo en
-SQLite y PostgreSQL) está listo, pero ver "Pendientes".
+**CI:** GitHub Actions (`.github/workflows/tests.yml`) corre todas las pruebas
+con SQLite y con PostgreSQL 16 en cada PR y en cada push a `main`. La rama
+`main` está protegida: los cambios entran solo por PR y con las pruebas en verde.
 
 ## Cómo se aplicó SDD
 
@@ -203,10 +206,6 @@ Todos los requisitos de la prueba están implementados, probados y publicados.
 - **Saldo de Claude:** la clave de Claude está configurada, pero la cuenta de
   la API no tiene crédito (la suscripción Claude Pro no lo incluye). Mientras
   tanto responde Gemini; Claude entra solo cuando se cargue saldo.
-- **CI en GitHub Actions:** el archivo está escrito y probado localmente, pero
-  no se pudo subir: el token de GitHub usado por el agente no tenía el permiso
-  `workflow`, y GitHub rechaza esos archivos sin él. Se subirá en cuanto se
-  autorice el permiso.
 - **Fuera de alcance por decisión de la spec:** autenticación de usuarios,
   edición/borrado de pedidos y migraciones de base de datos versionadas (hoy
   las tablas se crean al iniciar).
